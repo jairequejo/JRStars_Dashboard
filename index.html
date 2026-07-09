@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Jr Stars · Dashboard Visual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0a; --surface:#111114; --card:#18181c; --card2:#1f1f24;
+  --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.04);
+  --tx1:#f2efe9; --tx2:#9998a0; --tx3:#5a5960;
+  --gold:#c9a227; --gold2:#f0c84a; --gold-dim:rgba(201,162,39,0.12); --gold-border:rgba(201,162,39,0.3);
+  --red:#c0392b; --red2:#e74c3c; --red-dim:rgba(192,57,43,0.12);
+  --green:#1a7a4a; --green2:#27ae60; --green-dim:rgba(26,122,74,0.12);
+  --blue:#1a5276; --blue2:#2980b9; --blue-dim:rgba(26,82,118,0.12);
+  --orange:#e67e22; --orange-dim:rgba(230,126,34,0.12);
+  --fd:'Syne',sans-serif; --fb:'DM Sans',sans-serif; --fm:'DM Mono',monospace;
+  --sw:220px; --radius:4px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx1);font-family:var(--fb);font-size:14px;line-height:1.5;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.035'/%3E%3C/svg%3E");opacity:.4}
+.topbar{height:52px;display:flex;align-items:center;padding:0 1.25rem;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;gap:1rem}
+.brand{display:flex;align-items:center;gap:.6rem}
+.brand-star{width:28px;height:28px;background:var(--gold);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.brand-name{font-family:var(--fd);font-size:1.1rem;letter-spacing:.06em;color:var(--tx1)}
+.brand-name em{color:var(--gold);font-style:normal}
+.topbar-right{display:flex;align-items:center;gap:.75rem;margin-left:auto}
+.chip{font-family:var(--fm);font-size:.68rem;padding:.25rem .65rem;border:1px solid var(--border);color:var(--tx3);border-radius:2px;letter-spacing:.06em}
+.chip.live{border-color:var(--green2);color:var(--green2)}
+.layout{display:flex;flex:1;overflow:hidden}
+.sidebar{width:var(--sw);background:var(--surface);border-right:1px solid var(--border);flex-shrink:0;overflow-y:auto;padding:.75rem 0}
+.nav-group-label{padding:.6rem 1rem .2rem;font-family:var(--fm);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--tx3)}
+.nav-item{display:flex;align-items:center;gap:.6rem;padding:.5rem 1rem;cursor:pointer;font-family:var(--fb);font-size:.82rem;font-weight:500;color:var(--tx2);border-left:2px solid transparent;transition:all .15s ease;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,0.04);color:var(--tx1)}
+.nav-item.active{background:var(--gold-dim);color:var(--gold2);border-left-color:var(--gold)}
+.nav-icon{font-size:.9rem;width:18px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;font-family:var(--fm);font-size:.62rem;background:var(--card2);color:var(--tx3);padding:.1rem .45rem;border-radius:2px}
+.nav-item.active .nav-badge{background:rgba(201,162,39,.2);color:var(--gold)}
+.content{flex:1;overflow-y:auto;background:var(--bg)}
+.page{display:none;padding:1.5rem;animation:fadeUp .2s ease}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.page-header{margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.page-title{font-family:var(--fd);font-size:1.6rem;letter-spacing:.04em;color:var(--tx1);line-height:1}
+.page-title span{color:var(--gold)}
+.page-desc{font-size:.8rem;color:var(--tx3);margin-top:.3rem;font-family:var(--fm)}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.75rem;margin-bottom:1.25rem}
+.kpi{background:var(--card);border:1px solid var(--border);padding:1rem;position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi.g::after{background:linear-gradient(90deg,var(--gold),var(--gold2))}
+.kpi.r::after{background:linear-gradient(90deg,var(--red),var(--red2))}
+.kpi.gr::after{background:linear-gradient(90deg,var(--green),var(--green2))}
+.kpi.b::after{background:linear-gradient(90deg,var(--blue),var(--blue2))}
+.kpi-l{font-family:var(--fm);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);margin-bottom:.3rem}
+.kpi-v{font-family:var(--fm);font-size:1.7rem;font-weight:400;line-height:1.1;letter-spacing:-.02em}
+.kpi.g .kpi-v{color:var(--gold2)}
+.kpi.r .kpi-v{color:var(--red2)}
+.kpi.gr .kpi-v{color:var(--green2)}
+.kpi.b .kpi-v{color:var(--blue2)}
+.kpi-s{font-size:.72rem;color:var(--tx3);margin-top:.2rem}
+.tbl-wrap{background:var(--card);border:1px solid var(--border);overflow:hidden}
+.tbl-toolbar{display:flex;align-items:center;gap:.6rem;padding:.75rem 1rem;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.search-wrap{display:flex;align-items:center;gap:.4rem;background:var(--card2);border:1px solid var(--border);padding:.35rem .75rem;flex:1;min-width:160px;border-radius:2px}
+.search-wrap input{background:none;border:none;color:var(--tx1);font-family:var(--fb);font-size:.82rem;outline:none;width:100%}
+select.flt{background:var(--card2);border:1px solid var(--border);color:var(--tx2);font-family:var(--fb);font-size:.8rem;padding:.35rem .6rem;border-radius:2px;outline:none}
+table{width:100%;border-collapse:collapse}
+thead th{font-family:var(--fm);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);padding:.6rem 1rem;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;background:var(--card2)}
+tbody tr{border-bottom:1px solid var(--border2);transition:background .1s}
+tbody tr:hover{background:rgba(255,255,255,0.03)}
+td{padding:.55rem 1rem;font-size:.82rem;vertical-align:middle}
+.no-data{text-align:center;padding:2rem;color:var(--tx3);font-family:var(--fm);font-size:.78rem}
+.badge{display:inline-flex;align-items:center;font-family:var(--fm);font-size:.65rem;letter-spacing:.07em;text-transform:uppercase;padding:.15rem .55rem;font-weight:500;border-radius:2px}
+.bg{background:var(--green-dim);color:var(--green2);border:1px solid rgba(39,174,96,.25)}
+.br{background:var(--red-dim);color:var(--red2);border:1px solid rgba(231,76,60,.25)}
+.bo{background:var(--gold-dim);color:var(--gold2);border:1px solid var(--gold-border)}
+.bb{background:var(--blue-dim);color:var(--blue2);border:1px solid rgba(41,128,185,.25)}
+.bn{background:rgba(99,99,110,.12);color:var(--tx3);border:1px solid rgba(99,99,110,.2)}
+.av{width:28px;height:28px;border-radius:50%;background:var(--card2);border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:.75rem;color:var(--gold);flex-shrink:0}
+
+/* BIO CARDS */
+.bio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.75rem}
+.bio-card{background:var(--card);border:1px solid var(--border);padding:1rem;transition:border-color .15s}
+.bio-card:hover{border-color:var(--gold-border)}
+.bio-header{display:flex;align-items:center;gap:.75rem;margin-bottom:.9rem}
+.bio-name{font-family:var(--fd);font-size:.95rem;letter-spacing:.04em}
+.bio-cat{font-family:var(--fm);font-size:.62rem;color:var(--tx3);margin-top:.1rem}
+.bio-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin-bottom:.8rem}
+.bio-metric{background:var(--card2);padding:.5rem .4rem;text-align:center;border-left:2px solid var(--gold)}
+.bio-ml{font-family:var(--fm);font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)}
+.bio-mv{font-family:var(--fm);font-size:1rem;font-weight:500;color:var(--gold2)}
+.bio-mu{font-family:var(--fm);font-size:.55rem;color:var(--tx3)}
+.bio-progress{margin-top:.6rem}
+.bp-label{font-family:var(--fm);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);margin-bottom:.3rem}
+.bp-periods{display:flex;flex-direction:column;gap:.25rem}
+.bp-row{display:flex;align-items:center;gap:.5rem}
+.bp-date{font-family:var(--fm);font-size:.6rem;color:var(--tx3);min-width:70px}
+.bp-track{flex:1;height:6px;background:var(--card2);border-radius:1px;overflow:hidden}
+.bp-fill{height:100%;border-radius:1px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .6s ease}
+.bp-val{font-family:var(--fm);font-size:.65rem;color:var(--gold2);min-width:32px;text-align:right}
+
+/* CALENDAR */
+.cal-wrap{background:var(--card);border:1px solid var(--border);padding:1rem;margin-bottom:.75rem}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+.cal-month{font-family:var(--fd);font-size:1.1rem;letter-spacing:.06em;color:var(--gold2)}
+.cal-btn{background:var(--card2);border:1px solid var(--border);color:var(--tx2);padding:.25rem .7rem;cursor:pointer;font-family:var(--fb);font-size:.75rem;border-radius:2px;transition:all .12s}
+.cal-btn:hover{border-color:var(--gold-border);color:var(--gold2)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-dh{font-family:var(--fm);font-size:.6rem;text-align:center;padding:.3rem 0;color:var(--tx3);letter-spacing:.07em;text-transform:uppercase}
+.cal-day{min-height:44px;background:var(--card2);border:1px solid var(--border2);padding:.25rem;cursor:pointer;position:relative}
+.cal-day:hover{border-color:var(--gold-border);background:var(--gold-dim)}
+.cal-day.today{border-color:var(--gold)}
+.cal-day.has-d::after{content:'';position:absolute;bottom:3px;right:3px;width:5px;height:5px;border-radius:50%;background:var(--green2)}
+.cal-day.sel{background:var(--gold-dim);border-color:var(--gold2)}
+.cal-day.other{opacity:.2;pointer-events:none}
+.cal-dn{font-family:var(--fm);font-size:.7rem;color:var(--tx3);display:block}
+.cal-ds{font-family:var(--fm);font-size:.65rem;color:var(--green2)}
+.ast-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin-bottom:.75rem}
+.ast-stat{background:var(--card);border:1px solid var(--border);padding:.65rem .8rem;text-align:center}
+.ast-sv{font-family:var(--fm);font-size:1.4rem;font-weight:400;letter-spacing:-.02em}
+.ast-sl{font-family:var(--fm);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);margin-top:.15rem}
+
+/* CAMPEONATOS GRID */
+.camp-grid{display:grid;grid-template-columns:1fr;gap:1.5rem}
+.camp-box{background:var(--card);border:1px solid var(--border);border-top:2px solid var(--gold);padding:1.25rem}
+.camp-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.camp-ttl{font-family:var(--fd);font-size:1.25rem;color:var(--gold2);letter-spacing:.04em}
+.camp-sub{font-size:.82rem;color:var(--tx2);margin-top:.2rem}
+.camp-cat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem}
+.camp-cat-box{background:var(--card2);border:1px solid var(--border);padding:1rem;border-radius:2px}
+.camp-cat-ttl{font-family:var(--fm);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem;border-bottom:1px solid var(--border);padding-bottom:.4rem}
+.camp-p{display:flex;align-items:center;gap:.6rem;padding:.4rem 0;border-bottom:1px solid var(--border2)}
+.camp-p:last-child{border-bottom:none}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--card2);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:var(--gold)}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><div class="brand-star"></div><span class="brand-name">JR <em>STARS</em></span></div>
+  <div style="width:1px;height:20px;background:var(--border);margin-left:1rem"></div>
+  <span style="font-family:var(--fm);font-size:.72rem;color:var(--tx3);letter-spacing:.08em;margin-left:1rem">DASHBOARD INTUITIVO (NUBE)</span>
+  <div class="topbar-right"><span class="chip" id="cloud-status">● CONECTANDO A SUPABASE...</span></div>
+</header>
+
+<div class="layout">
+<nav class="sidebar">
+  <div class="nav-group-label">General</div>
+  <div class="nav-item active" onclick="go('dash')" id="nav-dash"><span class="nav-icon">▦</span>Dashboard<span class="nav-badge" id="bdg-dash">KPIs</span></div>
+  
+  <div class="nav-group-label">Atletas</div>
+  <div class="nav-item" onclick="go('alumnos')" id="nav-alumnos"><span class="nav-icon">🏃</span>Alumnos<span class="nav-badge" id="bdg-alumnos">0</span></div>
+  <div class="nav-item" onclick="go('bio')" id="nav-bio"><span class="nav-icon">📈</span>Biométricos<span class="nav-badge">Hist.</span></div>
+  <div class="nav-item" onclick="go('asist')" id="nav-asist"><span class="nav-icon">📅</span>Asistencias<span class="nav-badge">Cal.</span></div>
+  <div class="nav-item" onclick="go('camp')" id="nav-camp"><span class="nav-icon">🏆</span>Campeonatos<span class="nav-badge" id="bdg-camp">0</span></div>
+
+  <div class="nav-group-label">Finanzas</div>
+  <div class="nav-item" onclick="go('cobros_alumnos')" id="nav-cobros_alumnos"><span class="nav-icon">💰</span>Cobros<span class="nav-badge" id="bdg-cobros_alumnos">0</span></div>
+  <div class="nav-item" onclick="go('liquidaciones_gastos')" id="nav-liquidaciones_gastos"><span class="nav-icon">📉</span>Liquidaciones<span class="nav-badge" id="bdg-liquidaciones_gastos">0</span></div>
+  
+  <div class="nav-group-label">Logística</div>
+  <div class="nav-item" onclick="go('materiales')" id="nav-materiales"><span class="nav-icon">⚽</span>Materiales<span class="nav-badge" id="bdg-materiales">0</span></div>
+  <div class="nav-item" onclick="go('sedes')" id="nav-sedes"><span class="nav-icon">🏢</span>Sedes<span class="nav-badge" id="bdg-sedes">0</span></div>
+  
+  <div class="nav-group-label">Listados Crudos</div>
+  <div class="nav-item" onclick="go('empleados')" id="nav-empleados"><span class="nav-icon">👥</span>Empleados<span class="nav-badge" id="bdg-empleados">0</span></div>
+  <div class="nav-item" onclick="go('proveedores')" id="nav-proveedores"><span class="nav-icon">🚚</span>Proveedores<span class="nav-badge" id="bdg-proveedores">0</span></div>
+  <div class="nav-item" onclick="go('uniformes')" id="nav-uniformes"><span class="nav-icon">👕</span>Uniformes<span class="nav-badge" id="bdg-uniformes">0</span></div>
+</nav>
+
+<main class="content">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dash">
+    <div class="page-header"><div class="page-title">PANEL <span>PRINCIPAL</span></div><div class="page-desc">Métricas maestras de Supabase</div></div>
+    <div class="kpi-row" id="kpi-dash"></div>
+  </div>
+
+  <!-- ALUMNOS -->
+  <div class="page" id="page-alumnos">
+    <div class="page-header"><div class="page-title">ALUMNOS <span>REGISTRADOS</span></div><div class="page-desc">Filtra por categoría y sede</div></div>
+    <div class="tbl-wrap"><table id="tb-alumnos"></table></div>
+  </div>
+
+  <!-- BIOMÉTRICOS -->
+  <div class="page" id="page-bio">
+    <div class="page-header"><div class="page-title">BIOMÉTRICOS <span>· EVOLUCIÓN</span></div><div class="page-desc">Progreso visual de las medidas físicas del atleta</div></div>
+    <div class="tbl-toolbar" style="background:var(--card);border:1px solid var(--border);padding:.75rem 1rem;margin-bottom:.75rem;display:flex;gap:.6rem;flex-wrap:wrap">
+      <div class="search-wrap"><span class="search-icon">⌕</span><input id="sr-bio" type="text" placeholder="Buscar atleta..." oninput="rBio()"></div>
+      <select class="flt" id="fl-bio-val" onchange="rBio()"><option value="">Valoración</option><option value="BUENA">Buena</option><option value="MALA">Mala</option></select>
+    </div>
+    <div class="bio-grid" id="bio-grid"></div>
+  </div>
+
+  <!-- ASISTENCIAS -->
+  <div class="page" id="page-asist">
+    <div class="page-header"><div class="page-title">CONTROL DE <span>ASISTENCIAS</span></div><div class="page-desc">Calendario interactivo. Clickea un día para ver detalle</div></div>
+    <div class="cal-wrap">
+      <div class="cal-nav"><button class="cal-btn" onclick="calPrev()">← Ant.</button><span class="cal-month" id="cal-lbl"></span><button class="cal-btn" onclick="calNext()">Sig. →</button></div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+    <div class="ast-stats">
+      <div class="ast-stat"><div class="ast-sv" style="color:var(--green2)" id="as-ok">—</div><div class="ast-sl">Asistió</div></div>
+      <div class="ast-stat"><div class="ast-sv" style="color:var(--red2)" id="as-fa">—</div><div class="ast-sl">Faltó</div></div>
+      <div class="ast-stat"><div class="ast-sv" style="color:var(--gold2)" id="as-ta">—</div><div class="ast-sl">Tardanza</div></div>
+      <div class="ast-stat"><div class="ast-sv" style="color:var(--blue2)" id="as-pc">—</div><div class="ast-sl">% Asistencia</div></div>
+    </div>
+    <div id="as-sel-date" style="font-family:var(--fm);font-size:.72rem;color:var(--tx3);margin-bottom:.5rem">Selecciona un día del calendario</div>
+    <div class="tbl-wrap"><table id="tb-asist-det"></table></div>
+  </div>
+
+  <!-- CAMPEONATOS -->
+  <div class="page" id="page-camp">
+    <div class="page-header"><div class="page-title">CAMPEONATOS Y <span>PARTICIPANTES</span></div><div class="page-desc">Clasificación de alumnos convocados por campeonato y categoría</div></div>
+    <div class="camp-grid" id="camp-grid"></div>
+  </div>
+  
+  <!-- OTHERS -->
+  <div class="page" id="page-cobros_alumnos"><div class="page-header"><div class="page-title">COBROS <span>ALUMNOS</span></div><div class="page-desc">Historial de pagos e ingresos</div></div><div class="tbl-wrap"><table id="tb-cobros_alumnos"></table></div></div>
+  <div class="page" id="page-liquidaciones_gastos"><div class="page-header"><div class="page-title">LIQUIDACIONES <span>GASTOS</span></div><div class="page-desc">Historial de egresos</div></div><div class="tbl-wrap"><table id="tb-liquidaciones_gastos"></table></div></div>
+  <div class="page" id="page-materiales"><div class="page-header"><div class="page-title">INVENTARIO <span>MATERIALES</span></div><div class="page-desc">Stock de balones y equipamiento</div></div><div class="tbl-wrap"><table id="tb-materiales"></table></div></div>
+  <div class="page" id="page-sedes"><div class="page-header"><div class="page-title">SEDES <span>ACTIVAS</span></div><div class="page-desc">Locaciones registradas</div></div><div class="tbl-wrap"><table id="tb-sedes"></table></div></div>
+  <div class="page" id="page-empleados"><div class="page-header"><div class="page-title">CUERPO <span>TÉCNICO</span></div><div class="page-desc">Empleados registrados</div></div><div class="tbl-wrap"><table id="tb-empleados"></table></div></div>
+  <div class="page" id="page-proveedores"><div class="page-header"><div class="page-title">PROVEEDORES <span>ACTIVOS</span></div><div class="page-desc">Contactos de proveedores logísticos</div></div><div class="tbl-wrap"><table id="tb-proveedores"></table></div></div>
+  <div class="page" id="page-uniformes"><div class="page-header"><div class="page-title">ENTREGA DE <span>UNIFORMES</span></div><div class="page-desc">Gestión de dorsales y tallas</div></div><div class="tbl-wrap"><table id="tb-uniformes"></table></div></div>
+
+</main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const TABLES = [
+  'alumnos', 'sedes', 'apoderados', 'empleados', 'horarios_entrenamiento', 
+  'proveedores', 'materiales', 'membresias', 'registros_biometricos', 
+  'uniformes', 'matriculas', 'cobros_alumnos', 'asistencias_alumnos', 
+  'campeonatos', 'jugadores_campeonato', 'liquidaciones_gastos'
+];
+var DB = {};
+TABLES.forEach(t => DB[t] = []);
+
+function ini(n, pa) { return (n?n[0]:'')+(pa?pa[0]:''); }
+function fmtDate(ds) { if(!ds) return '—'; return new Date(ds).toLocaleDateString('es-PE',{day:'2-digit',month:'short',year:'numeric'}); }
+
+function renderDash() {
+  const totAl = DB.alumnos.length;
+  const totEmp = DB.empleados.length;
+  let ingresos = 0; DB.cobros_alumnos.forEach(x => ingresos += parseFloat(x.monto||0));
+  let egresos = 0; DB.liquidaciones_gastos.forEach(x => egresos += parseFloat(x.monto_pagado||0));
+  let asOk = 0; DB.asistencias_alumnos.forEach(x => { if(x.estado==='ASISTIO') asOk++; });
+  
+  document.getElementById('kpi-dash').innerHTML = 
+    `<div class="kpi g"><div class="kpi-l">ALUMNOS</div><div class="kpi-v">${totAl}</div></div>
+     <div class="kpi gr"><div class="kpi-l">INGRESOS</div><div class="kpi-v">S/${ingresos.toFixed(0)}</div></div>
+     <div class="kpi r"><div class="kpi-l">EGRESOS</div><div class="kpi-v">S/${egresos.toFixed(0)}</div></div>
+     <div class="kpi bo"><div class="kpi-l">CAMPEONATOS</div><div class="kpi-v">${DB.campeonatos.length}</div></div>
+     <div class="kpi b"><div class="kpi-l">ASISTENCIAS (OK)</div><div class="kpi-v">${asOk}</div></div>`;
+}
+
+// ── BIOMÉTRICOS VISUAL ──
+function rBio() {
+  try {
+    const q = (document.getElementById('sr-bio')?.value||'').toLowerCase();
+    const vF = document.getElementById('fl-bio-val')?.value;
+    
+    // Agrupar biométricos por alumno
+    let hist = {};
+    (DB.registros_biometricos || []).forEach(r => {
+      if(!hist[r.id_alumno]) hist[r.id_alumno] = [];
+      hist[r.id_alumno].push(r);
+    });
+    
+    let h = '';
+    let count = 0;
+    (DB.alumnos || []).forEach(a => {
+      let n_str = a.nombre || '';
+      let p_str = a.paterno_alumno || '';
+      let name = (n_str + ' ' + p_str).toLowerCase();
+      
+      let rh = hist[a.id_alumno] || [];
+      rh.sort((x,y) => new Date(x.fecha||0) - new Date(y.fecha||0)); 
+      let last = rh.length ? rh[rh.length-1] : { valoracion: 'BUENA', salto_cm:0, talla_cm:0, peso_kg:0, velocidad_seg:0 };
+      let first = rh.length ? rh[0] : { salto_cm:0 };
+      
+      if(q && !name.includes(q)) return;
+      if(vF && last.valoracion !== vF) return;
+      
+      count++;
+      let maxS = Math.max(last.salto_cm||0, first.salto_cm||0, 1);
+      
+      h += `<div class="bio-card">
+        <div class="bio-header"><div class="av">${ini(n_str, p_str)}</div>
+          <div><div class="bio-name">${n_str} ${p_str}</div>
+          <div class="bio-cat">${a.categoria||'Sin Cat'} · <span class="badge ${last.valoracion==='BUENA'?'bg':'br'}">${last.valoracion||'S/N'}</span></div></div>
+        </div>
+        <div class="bio-metrics">
+          <div class="bio-metric"><div class="bio-ml">SALTO</div><div class="bio-mv">${last.salto_cm||'-'}</div><div class="bio-mu">cm</div></div>
+          <div class="bio-metric"><div class="bio-ml">TALLA</div><div class="bio-mv">${last.talla_cm||'-'}</div><div class="bio-mu">cm</div></div>
+          <div class="bio-metric"><div class="bio-ml">PESO</div><div class="bio-mv">${last.peso_kg||'-'}</div><div class="bio-mu">kg</div></div>
+          <div class="bio-metric"><div class="bio-ml">VELOCIDAD</div><div class="bio-mv">${last.velocidad_seg||'-'}</div><div class="bio-mu">s</div></div>
+        </div>`;
+        
+      if(rh.length > 1) {
+        h += `<div class="bio-progress"><div class="bp-label"> PROGRESO — SALTO (cm)</div><div class="bp-periods">`;
+        rh.forEach(r => {
+          let pct = maxS > 0 ? Math.round((r.salto_cm||0)/maxS*100) : 0;
+          h += `<div class="bp-row"><span class="bp-date">${fmtDate(r.fecha)}</span>
+                <div class="bp-track"><div class="bp-fill" style="width:${pct}%"></div></div>
+                <span class="bp-val">${r.salto_cm||0} cm</span></div>`;
+        });
+        h += `</div></div>`;
+      } else {
+        h += `<div style="font-family:var(--fm);font-size:.65rem;color:var(--tx3);margin-top:.5rem">Registros insuficientes para graficar evolución. (Total: ${rh.length})</div>`;
+      }
+      h += '</div>';
+    });
+    
+    document.getElementById('bio-grid').innerHTML = h || `<div class="no-data">Se procesaron ${(DB.alumnos||[]).length} alumnos, pero 0 coinciden con los filtros.</div>`;
+  } catch (err) {
+    document.getElementById('bio-grid').innerHTML = `<div class="no-data" style="color:var(--red2)">ERROR EN RENDERIZADO: ${err.message}</div>`;
+  }
+}
+
+// ── ASISTENCIAS VISUAL (CALENDARIO) ──
+var _calY=new Date().getFullYear(), _calM=new Date().getMonth(), _calSel=null;
+function calPrev(){ _calM--; if(_calM<0){_calM=11;_calY--;} _calSel=null; rAsist(); }
+function calNext(){ _calM++; if(_calM>11){_calM=0;_calY++;} _calSel=null; rAsist(); }
+const MNAMES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function rAsist() {
+  document.getElementById('cal-lbl').textContent = MNAMES[_calM]+' '+_calY;
+  const first = new Date(_calY,_calM,1); const last = new Date(_calY,_calM+1,0);
+  let dow = first.getDay(); if(dow===0) dow=6; else dow--;
+  const today = new Date();
+  
+  let h = '';
+  ['L','M','X','J','V','S','D'].forEach(d => h += `<div class="cal-dh">${d}</div>`);
+  for(let i=0;i<dow;i++) { h += `<div class="cal-day other"><span class="cal-dn">${new Date(_calY,_calM,-dow+i+1).getDate()}</span></div>`; }
+  
+  for(let d=1; d<=last.getDate(); d++) {
+    let ds = `${_calY}-${String(_calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    let da = DB.asistencias_alumnos.filter(x => x.fecha_asistencia === ds);
+    let asOk = da.filter(x => x.estado === 'ASISTIO').length;
+    let isTod = (today.getDate()===d && today.getMonth()===_calM && today.getFullYear()===_calY);
+    
+    h += `<div class="cal-day ${da.length?'has-d':''} ${isTod?'today':''} ${_calSel===ds?'sel':''}" onclick="_calSel='${ds}'; rAsist()">
+            <span class="cal-dn">${d}</span>
+            ${da.length ? `<span class="cal-ds">${asOk}/${da.length}</span>` : ''}
+          </div>`;
+  }
+  let rem = (7 - (dow+last.getDate())%7)%7;
+  for(let i=1;i<=rem;i++) h += `<div class="cal-day other"><span class="cal-dn">${i}</span></div>`;
+  document.getElementById('cal-grid').innerHTML = h;
+  
+  // Stats del día seleccionado
+  if(_calSel) {
+    let da = DB.asistencias_alumnos.filter(x => x.fecha_asistencia === _calSel);
+    let ok=0, fa=0, ta=0;
+    da.forEach(x => { if(x.estado==='ASISTIO') ok++; else if(x.estado==='FALTO') fa++; else if(x.estado==='TARDANZA') ta++; });
+    let pct = da.length ? Math.round(ok/da.length*100) : 0;
+    
+    document.getElementById('as-ok').textContent = ok||'—';
+    document.getElementById('as-fa').textContent = fa||'—';
+    document.getElementById('as-ta').textContent = ta||'—';
+    document.getElementById('as-pc').textContent = da.length ? pct+'%' : '—';
+    document.getElementById('as-sel-date').textContent = `Día: ${fmtDate(_calSel)} · ${da.length} registros`;
+    
+    // Tabla detalle
+    let th = '<thead><tr><th>Alumno</th><th>Estado</th></tr></thead><tbody>';
+    da.forEach(x => {
+      let al = DB.alumnos.find(a => a.id_alumno === x.id_alumno);
+      let name = al ? al.nombre+' '+al.paterno_alumno : '#'+x.id_alumno;
+      let cls = x.estado==='ASISTIO'?'bg':x.estado==='FALTO'?'br':x.estado==='TARDANZA'?'bo':'bb';
+      th += `<tr><td>${name}</td><td><span class="badge ${cls}">${x.estado}</span></td></tr>`;
+    });
+    th += '</tbody>';
+    document.getElementById('tb-asist-det').innerHTML = da.length ? th : '<tr><td class="no-data">Sin registros para este día</td></tr>';
+  } else {
+    document.getElementById('tb-asist-det').innerHTML = '<tr><td class="no-data">Selecciona un día en el calendario</td></tr>';
+  }
+}
+
+// ── CAMPEONATOS Y CONVOCADOS ──
+function rCamp() {
+  let h = '';
+  DB.campeonatos.forEach(c => {
+    // Buscar jugadores de este campeonato
+    let jug = DB.jugadores_campeonato.filter(j => j.id_campeonato === c.id_campeonato);
+    
+    // Agrupar por categoría del alumno
+    let cats = {};
+    jug.forEach(j => {
+      let al = DB.alumnos.find(a => a.id_alumno === j.id_alumno);
+      if(!al) return;
+      let cat = al.categoria || 'Sin Categoría';
+      if(!cats[cat]) cats[cat] = [];
+      cats[cat].push({ j: j, a: al });
+    });
+    
+    h += `<div class="camp-box">
+            <div class="camp-hd">
+              <div><div class="camp-ttl">${c.nombre_campeonato}</div><div class="camp-sub">${c.tipo} · Del ${fmtDate(c.fecha_inicio)} al ${fmtDate(c.fecha_fin)}</div></div>
+              <span class="badge ${c.estado==='EN CURSO'?'bg':c.estado==='PROXIMO'?'bo':'bn'}">${c.estado}</span>
+            </div>
+            <div class="camp-cat-grid">`;
+            
+    for(let cat in cats) {
+      h += `<div class="camp-cat-box"><div class="camp-cat-ttl">${cat} — ${cats[cat].length} CONVOCADOS</div>`;
+      cats[cat].forEach(x => {
+        h += `<div class="camp-p">
+                <div class="av" style="width:22px;height:22px;font-size:.6rem">${ini(x.a.nombre, x.a.paterno_alumno)}</div>
+                <div style="font-size:.8rem">${x.a.nombre} ${x.a.paterno_alumno}</div>
+                <div style="margin-left:auto"><span class="badge ${x.j.estado_inscripcion==='INSCRITO'?'bg':'bn'}" style="font-size:.55rem">${x.j.estado_inscripcion}</span></div>
+              </div>`;
+      });
+      h += `</div>`;
+    }
+    if(Object.keys(cats).length === 0) h += '<div style="font-size:.8rem;color:var(--tx3)">Aún no hay alumnos convocados para este campeonato.</div>';
+    
+    h += `</div></div>`;
+  });
+  document.getElementById('camp-grid').innerHTML = h || '<div class="no-data">No hay campeonatos registrados</div>';
+}
+
+// ── TABLAS CRUDAS GENERICAS ──
+function renderTable(id) {
+  const data = DB[id];
+  const tb = document.getElementById('tb-'+id);
+  if(!tb) return;
+  if(!data || data.length === 0) {
+    tb.innerHTML = `<tr><td class="no-data">No hay datos en ${id}.</td></tr>`;
+    return;
+  }
+  const cols = Object.keys(data[0]);
+  let h = '<thead><tr>';
+  cols.forEach(c => h += `<th>${c.replace(/_/g, ' ')}</th>`);
+  h += '</tr></thead><tbody>';
+  
+  data.forEach(row => {
+    h += '<tr>';
+    cols.forEach(c => {
+      let val = row[c] !== null ? row[c] : '—';
+      if(String(c).toLowerCase().includes('estado')) {
+        let cls = 'bn';
+        if(val==='ACTIVO' || val==='PAGADO' || val==='ENTREGADO' || val==='OPTIMO') cls='bg';
+        if(val==='INACTIVO' || val==='ANULADO' || val==='CERRADO' || val==='PENDIENTE') cls='br';
+        if(val==='MANTENIMIENTO' || val==='PROXIMO' || val==='SUSPENDIDO') cls='bo';
+        val = `<span class="badge ${cls}">${val}</span>`;
+      }
+      h += `<td>${val}</td>`;
+    });
+    h += '</tr>';
+  });
+  h += '</tbody>';
+  tb.innerHTML = h;
+}
+
+function go(id) {
+  document.querySelectorAll('.page, .nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('page-'+id)?.classList.add('active');
+  document.getElementById('nav-'+id)?.classList.add('active');
+  if(id === 'dash') renderDash();
+  else if(id === 'bio') rBio();
+  else if(id === 'asist') rAsist();
+  else if(id === 'camp') rCamp();
+  else renderTable(id);
+}
+
+// CONEXIÓN A SUPABASE
+var SUPABASE_URL = 'https://hsgidnkwwusretlfvgki.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_0ebD2vXt_jXkqDufKHSn6w_7-JhGPpw';
+var sbClient = null;
+
+async function initSupabase() {
+  go('dash');
+  var stEl = document.getElementById('cloud-status');
+  if(!window.supabase) return;
+  
+  try {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    stEl.textContent = '● DESCARGANDO DATOS...';
+    stEl.classList.add('live');
+    
+    const promises = TABLES.map(async (t) => {
+      try {
+        let res = await sbClient.from(t).select('*');
+        if(!res.error && res.data) {
+          DB[t] = res.data;
+          let bdg = document.getElementById('bdg-'+t);
+          if(bdg) bdg.textContent = res.data.length;
+        }
+      } catch(e) {}
+    });
+    await Promise.all(promises);
+    
+    stEl.textContent = '● CONECTADO - TODAS LAS TABLAS SINCRONIZADAS';
+    go('dash');
+  } catch(ex) {
+    stEl.textContent = '● ERROR DE CONEXIÓN';
+    stEl.classList.remove('live');
+    stEl.style.color = 'var(--red2)';
+  }
+}
+
+initSupabase();
+</script>
+</body>
+</html>
